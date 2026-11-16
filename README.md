@@ -1,8 +1,10 @@
 # lstack
 
+English | [简体中文](./README.zh-CN.md)
+
 Personal agent skills stack for engineering and productivity, modeled after [mattpocock/skills](https://github.com/mattpocock/skills).
 
-Small, composable, Markdown-first skills that work across Antigravity, Claude Code, Codex, Gemini CLI, Cursor, and any Agent Skills-compatible harness.
+Small, composable, Markdown-first skills designed to work across Antigravity, Claude Code, Codex, Gemini CLI, Cursor, and other Agent Skills-compatible harnesses.
 
 ## Installation
 
@@ -16,7 +18,7 @@ cd lstack
 ./scripts/link-skills.sh
 ```
 
-Whenever you edit a `SKILL.md` or pull new commits (`git pull`), updates take effect immediately. Re-run `./scripts/link-skills.sh` after adding, renaming, or removing a skill.
+[`scripts/link-skills.sh`](./scripts/link-skills.sh) scans `skills/` for `SKILL.md` files (excluding `deprecated/`, `misc/`, and `node_modules/`), validates that none of the destination directories are symlinks pointing back into the repository, and creates per-skill symlinks. Edits to any `SKILL.md` or `git pull` take effect immediately; re-run `./scripts/link-skills.sh` after adding, renaming, moving, or retiring a skill.
 
 ### Install Across Harnesses
 
@@ -27,7 +29,11 @@ Whenever you edit a `SKILL.md` or pull new commits (`git pull`), updates take ef
 npx skills@latest add xdlkc/lstack
 ```
 
-To update later, run `npx skills@latest update`.
+To update later:
+
+```bash
+npx skills@latest update
+```
 
 </details>
 
@@ -61,49 +67,61 @@ gemini skills install https://github.com/xdlkc/lstack.git --path skills/producti
 
 </details>
 
+<details>
+<summary><strong>Antigravity</strong></summary>
+
+Run `./scripts/link-skills.sh` from a local clone to symlink active skills into `~/.gemini/config/skills`.
+
+</details>
+
 ## Skills Reference
 
-Skills split on who can invoke them:
+Skills split by how they are invoked:
 
-- **User-invoked**: triggered explicitly by you (e.g. `/grill-me`), orchestrating top-level workflows.
-- **Model-invoked**: triggered autonomously by the agent when appropriate or explicitly by you, holding reusable discipline.
+- **User-invoked**: Triggered explicitly by the user (e.g. `/grill-me`), orchestrating top-level workflows. Marked with `disable-model-invocation: true` in `SKILL.md` and `policy.allow_implicit_invocation: false` in `agents/openai.yaml`. User-invoked skills may call model-invoked skills, never another user-invoked skill.
+- **Model-invoked**: Triggered autonomously by the agent via `Use when...` description conditions, or explicitly by the user, holding reusable discipline.
 
 ### Engineering
 
 | Skill | Invocation | Description |
 | --- | --- | --- |
-| **[code-review](./skills/engineering/code-review/SKILL.md)** | Model-invoked | Two-axis diff review checking coding standards and requirement/spec fidelity. |
-| **[tdd](./skills/engineering/tdd/SKILL.md)** | Model-invoked | Red-green-refactor test-driven development loop, one vertical slice at a time. |
-
-#### User-invoked
-
-*(None yet)*
-
-#### Model-invoked
-
-- **[code-review](./skills/engineering/code-review/SKILL.md)**: Two-axis diff review checking coding standards and requirement/spec fidelity.
-- **[tdd](./skills/engineering/tdd/SKILL.md)**: Red-green-refactor test-driven development loop, one vertical slice at a time.
+| **[code-review](./skills/engineering/code-review/SKILL.md)** | `Model-invoked` | Two-axis diff review checking coding standards (`AGENTS.md`, `CLAUDE.md`, structure) and spec/correctness fidelity, ordered by severity. |
+| **[tdd](./skills/engineering/tdd/SKILL.md)** | `Model-invoked` | Red-green-refactor test-driven development loop, building one vertical slice through public seams at a time. |
 
 ### Productivity
 
 | Skill | Invocation | Description |
 | --- | --- | --- |
-| **[grill-me](./skills/productivity/grill-me/SKILL.md)** | User-invoked | Get relentlessly interviewed about a plan or design until every branch of the design tree is resolved. |
-| **[grilling](./skills/productivity/grilling/SKILL.md)** | Model-invoked | Reusable interview primitive to stress-test plans, designs, and requirements one branch at a time. |
+| **[grill-me](./skills/productivity/grill-me/SKILL.md)** | `User-invoked` | Top-level interview workflow that calls `grilling` and blocks code edits until every branch of the plan or design is resolved and confirmed. |
+| **[grilling](./skills/productivity/grilling/SKILL.md)** | `Model-invoked` | Reusable interview primitive to stress-test plans, designs, and requirements one dependency-ordered branch at a time. |
 
-#### User-invoked
+## Promotion Lifecycle
 
-- **[grill-me](./skills/productivity/grill-me/SKILL.md)**: Get relentlessly interviewed about a plan or design until every branch of the design tree is resolved.
+Skills progress through buckets under `skills/`:
 
-#### Model-invoked
-
-- **[grilling](./skills/productivity/grilling/SKILL.md)**: Reusable interview primitive to stress-test plans, designs, and requirements one branch at a time.
+1. **`skills/in-progress/`** ([notes](./skills/in-progress/README.md)) — Experimental beta skills under active iteration. Symlinked locally by `./scripts/link-skills.sh` for daily testing, but excluded from top-level `README.md` and `.claude-plugin/plugin.json`.
+2. **`skills/engineering/` & `skills/productivity/`** — Promoted daily skills shipped in [`.claude-plugin/plugin.json`](./.claude-plugin/plugin.json). Each promoted skill stays synchronized across top-level `README.md`, its bucket README ([`skills/engineering/README.md`](./skills/engineering/README.md) or [`skills/productivity/README.md`](./skills/productivity/README.md)), and `.claude-plugin/plugin.json`.
+3. **`skills/deprecated/`** — Retired skills (created when needed). Never symlinked locally and excluded from top-level documentation and plugin manifests.
 
 ## Repository Structure
 
-- `skills/engineering/`: Promoted engineering skills (shipped in plugin).
-- `skills/productivity/`: Promoted productivity skills (shipped in plugin).
-- `skills/in-progress/`: Experimental skills under iteration (linked locally, excluded from plugin).
-- `skills/deprecated/`: Retired skills.
-- `.claude-plugin/`: Plugin and marketplace manifests (`plugin.json`, `marketplace.json`).
-- `scripts/link-skills.sh`: Local symlink installer for Antigravity, Claude Code, and Codex.
+```text
+.
+├── .claude-plugin/
+│   ├── marketplace.json        # Marketplace catalog entry (xdlkc)
+│   └── plugin.json             # Plugin manifest & promoted skills list
+├── scripts/
+│   └── link-skills.sh          # Local symlink installer (Antigravity, Claude Code, Codex)
+├── skills/
+│   ├── engineering/            # Promoted engineering skills (code-review, tdd)
+│   ├── productivity/           # Promoted productivity skills (grill-me, grilling)
+│   └── in-progress/            # Experimental skills (excluded from plugin manifest)
+├── AGENTS.md                   # Repository conventions
+├── CLAUDE.md                   # Canonical authoring & sync rules
+├── README.md
+└── README.zh-CN.md
+```
+
+## License
+
+MIT (as declared in [`.claude-plugin/plugin.json`](./.claude-plugin/plugin.json)).
