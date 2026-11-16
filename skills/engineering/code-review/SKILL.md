@@ -28,6 +28,7 @@ Inspect the diff against the originating task, spec, or issue:
 - Are edge cases, error paths, and failure modes handled?
 - Are tests verifying real behavior rather than tautological mocks?
 - Did the change introduce regressions or break existing contracts?
+- If the diff changes CLI commands/flags, ports, configuration, environment variables, or user-visible behavior, are `README.md`, `README.zh-CN.md` (in bilingual repos), and `CHANGELOG.md` (when present) updated in lockstep?
 
 ## Output Format
 

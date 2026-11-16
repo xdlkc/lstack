@@ -30,6 +30,13 @@ Every `SKILL.md` falls into one of two invocation categories, and `agents/openai
 
 A user-invoked skill may invoke model-invoked skills (`Call the Skill tool with "<skill>"`), never another user-invoked skill.
 
-## Local Symlink Sync
+## Local Symlink & Governance Sync
 
-After adding, renaming, moving, or removing a skill, run `./scripts/link-skills.sh` to refresh symlinks in `~/.gemini/config/skills`, `~/.claude/skills`, and `~/.agents/skills`.
+After adding, renaming, moving, or removing a skill or updating `governance/`, run `./scripts/link-skills.sh` to refresh:
+
+- Skill symlinks in `~/.gemini/config/skills`, `~/.claude/skills`, and `~/.agents/skills`.
+- Antigravity governance plugin at `~/.gemini/config/plugins/lstack-docs-governance` (`rules/AGENTS.md` + `hooks.json` `Stop` gate).
+- Claude Code global rule at `~/.claude/rules/docs-discipline.md`.
+- Managed rule blocks in `~/.codex/AGENTS.md` and `~/.kl/agent/AGENTS.md` (when installed).
+
+For isolated headless workers running with separate `HOME` directories, run `./scripts/inject-repo-rule.sh /path/to/repo` to upsert the governance block into the repository's `AGENTS.md`.

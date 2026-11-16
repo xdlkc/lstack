@@ -1,0 +1,5 @@
+# Documentation & Release Governance
+
+1. **Bilingual README Sync**: Whenever code changes alter CLI commands/flags, ports, environment variables, config schemas, dependencies, directory layout, or user-visible behavior, use the `docs-sync` skill before finishing. In repositories with both `README.md` (English) and `README.zh-CN.md` (Simplified Chinese), always update both files together with mutual top switcher links, and verify with `python3 ~/.agents/skills/docs-sync/scripts/verify_docs.py <repo-root>`. Never invent flags or unbacked license claims, and never append versioned patch notes into `README.md`.
+2. **CHANGELOG Discipline**: In repositories with `CHANGELOG.md`, record user- or caller-observable changes under `## [Unreleased]` (`Added` / `Changed` / `Fixed` / `Removed` / `Security`) with migration notes for breaking changes.
+3. **Releases & Release Notes**: When bumping versions, tagging `v*`, or drafting GitHub Releases, follow `/cut-release` (`check_release_ready.py`, manifest version alignment, `CHANGELOG.md` rollout, and bilingual English + Simplified Chinese Release Notes).

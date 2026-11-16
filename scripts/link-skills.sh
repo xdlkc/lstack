@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Links all active skills in this repository into the local skill directories
-# used by each agent harness:
-#   - ~/.gemini/config/skills: Antigravity / Gemini
-#   - ~/.claude/skills: Claude Code
+# Links all active skills and documentation governance rules/hooks in this repository
+# into local agent harness directories:
+#   - ~/.gemini/config/skills & ~/.gemini/config/plugins/lstack-docs-governance: Antigravity
+#   - ~/.claude/skills & ~/.claude/rules/docs-discipline.md: Claude Code
 #   - ~/.agents/skills: Codex and other Agent Skills-compatible harnesses
-# Each entry is a symlink into this repo, so a `git pull` or local edit keeps
-# installed skills immediately up to date.
+#   - ~/.codex/AGENTS.md & ~/.kl/agent/AGENTS.md: managed governance rule block
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 DESTS=(
@@ -54,3 +53,24 @@ for DEST in "${DESTS[@]}"; do
     echo "linked $name -> $src ($DEST)"
   done
 done
+
+# Link Antigravity governance plugin (global rule + Stop hook)
+AGY_PLUGIN_DIR="$HOME/.gemini/config/plugins"
+mkdir -p "$AGY_PLUGIN_DIR"
+ln -sfn "$REPO/governance" "$AGY_PLUGIN_DIR/lstack-docs-governance"
+echo "linked lstack-docs-governance -> $REPO/governance ($AGY_PLUGIN_DIR)"
+
+# Link Claude Code global rule
+CLAUDE_RULES_DIR="$HOME/.claude/rules"
+mkdir -p "$CLAUDE_RULES_DIR"
+ln -sfn "$REPO/governance/rules/AGENTS.md" "$CLAUDE_RULES_DIR/docs-discipline.md"
+echo "linked docs-discipline.md -> $REPO/governance/rules/AGENTS.md ($CLAUDE_RULES_DIR)"
+
+# Upsert managed rule block into Codex and kl global AGENTS.md when installed
+if [ -d "$HOME/.codex" ]; then
+  "$REPO/scripts/inject-repo-rule.sh" --file "$HOME/.codex/AGENTS.md"
+fi
+
+if [ -d "$HOME/.kl" ]; then
+  "$REPO/scripts/inject-repo-rule.sh" --file "$HOME/.kl/agent/AGENTS.md"
+fi

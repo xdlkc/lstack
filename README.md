@@ -8,9 +8,9 @@ Small, composable, Markdown-first skills designed to work across Antigravity, Cl
 
 ## Installation
 
-### Local Development (Symlink Hot-Reload)
+### Local Development (Symlink Hot-Reload & Global Governance)
 
-Clone this repository and link active skills directly into `~/.gemini/config/skills`, `~/.claude/skills`, and `~/.agents/skills`:
+Clone this repository and run the setup script to link active skills and global documentation governance across your local harnesses:
 
 ```bash
 git clone https://github.com/xdlkc/lstack.git
@@ -18,7 +18,21 @@ cd lstack
 ./scripts/link-skills.sh
 ```
 
-[`scripts/link-skills.sh`](./scripts/link-skills.sh) scans `skills/` for `SKILL.md` files (excluding `deprecated/`, `misc/`, and `node_modules/`), validates that none of the destination directories are symlinks pointing back into the repository, and creates per-skill symlinks. Edits to any `SKILL.md` or `git pull` take effect immediately; re-run `./scripts/link-skills.sh` after adding, renaming, moving, or retiring a skill.
+[`scripts/link-skills.sh`](./scripts/link-skills.sh) performs two roles:
+
+1. **Per-skill hot-reload symlinks**: Scans `skills/` for `SKILL.md` files (excluding `deprecated/`, `misc/`, and `node_modules/`), validates that none of the destination directories are symlinks pointing back into the repository, and links them into `~/.gemini/config/skills`, `~/.claude/skills`, and `~/.agents/skills`.
+2. **Global documentation & release governance**:
+   - Links [`governance/`](./governance/plugin.json) into `~/.gemini/config/plugins/lstack-docs-governance` (activating [`governance/rules/AGENTS.md`](./governance/rules/AGENTS.md) and the deterministic `Stop` hook [`governance/hooks/stop-docs-check.py`](./governance/hooks/stop-docs-check.py) in Antigravity).
+   - Links `governance/rules/AGENTS.md` to `~/.claude/rules/docs-discipline.md` for Claude Code.
+   - Upserts the managed governance block into `~/.codex/AGENTS.md` and `~/.kl/agent/AGENTS.md` when those directories exist.
+
+Edits to any `SKILL.md` or rule take effect immediately; re-run `./scripts/link-skills.sh` after adding, renaming, moving, or retiring a skill.
+
+For isolated headless workers running with separate `HOME` directories (such as Nexus git worktrees), inject the same rule block into a target repository's `AGENTS.md`:
+
+```bash
+./scripts/inject-repo-rule.sh /path/to/repo
+```
 
 ### Install Across Harnesses
 
@@ -85,7 +99,9 @@ Skills split by how they are invoked:
 
 | Skill | Invocation | Description |
 | --- | --- | --- |
-| **[code-review](./skills/engineering/code-review/SKILL.md)** | `Model-invoked` | Two-axis diff review checking coding standards (`AGENTS.md`, `CLAUDE.md`, structure) and spec/correctness fidelity, ordered by severity. |
+| **[cut-release](./skills/engineering/cut-release/SKILL.md)** | `User-invoked` | Align version manifests, roll [`CHANGELOG.md`](./CHANGELOG.md), verify docs via `check_release_ready.py`, and draft bilingual GitHub Release Notes (`/cut-release`). |
+| **[code-review](./skills/engineering/code-review/SKILL.md)** | `Model-invoked` | Two-axis diff review checking coding standards (`AGENTS.md`, `CLAUDE.md`, structure), docs/changelog parity, and spec/correctness fidelity, ordered by severity. |
+| **[docs-sync](./skills/engineering/docs-sync/SKILL.md)** | `Model-invoked` | Keep bilingual `README.md` / `README.zh-CN.md` and `CHANGELOG.md` synchronized with CLI, config, and architecture changes, backed by [`verify_docs.py`](./skills/engineering/docs-sync/scripts/verify_docs.py). |
 | **[tdd](./skills/engineering/tdd/SKILL.md)** | `Model-invoked` | Red-green-refactor test-driven development loop, building one vertical slice through public seams at a time. |
 
 ### Productivity
@@ -109,14 +125,23 @@ Skills progress through buckets under `skills/`:
 .
 ├── .claude-plugin/
 │   ├── marketplace.json        # Marketplace catalog entry (xdlkc)
-│   └── plugin.json             # Plugin manifest & promoted skills list
+│   └── plugin.json             # Plugin manifest & promoted skills list (v0.2.0)
+├── governance/                 # Global rules & Antigravity Stop hook plugin
+│   ├── plugin.json             # Native Antigravity plugin manifest
+│   ├── hooks.json              # Stop hook registration
+│   ├── hooks/
+│   │   └── stop-docs-check.py  # Deterministic bilingual drift & link gate
+│   └── rules/
+│       └── AGENTS.md           # Concise always-on docs & release trigger rules
 ├── scripts/
-│   └── link-skills.sh          # Local symlink installer (Antigravity, Claude Code, Codex)
+│   ├── link-skills.sh          # Local symlink & global governance installer
+│   └── inject-repo-rule.sh     # Upserts governance rule block into repo AGENTS.md
 ├── skills/
-│   ├── engineering/            # Promoted engineering skills (code-review, tdd)
+│   ├── engineering/            # Promoted engineering skills (cut-release, code-review, docs-sync, tdd)
 │   ├── productivity/           # Promoted productivity skills (grill-me, grilling)
 │   └── in-progress/            # Experimental skills (excluded from plugin manifest)
 ├── AGENTS.md                   # Repository conventions
+├── CHANGELOG.md                # Release history (Keep a Changelog)
 ├── CLAUDE.md                   # Canonical authoring & sync rules
 ├── README.md
 └── README.zh-CN.md

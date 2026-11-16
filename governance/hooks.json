@@ -1,0 +1,11 @@
+{
+  "docs-sync-stop-gate": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./hooks/stop-docs-check.py",
+        "timeout": 5
+      }
+    ]
+  }
+}

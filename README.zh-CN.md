@@ -8,9 +8,9 @@
 
 ## 安装方式
 
-### 本地开发（软链接热更新）
+### 本地开发（软链接热更新与全局文档治理）
 
-克隆本仓库后运行安装脚本，将所有启用中的技能软链接到 `~/.gemini/config/skills`、`~/.claude/skills` 与 `~/.agents/skills`：
+克隆本仓库后运行安装脚本，即可在各本地 Agent 运行环境中同步启用技能与全局文档/发版规范：
 
 ```bash
 git clone https://github.com/xdlkc/lstack.git
@@ -18,7 +18,21 @@ cd lstack
 ./scripts/link-skills.sh
 ```
 
-[`scripts/link-skills.sh`](./scripts/link-skills.sh) 会扫描 `skills/` 下的 `SKILL.md`（自动跳过 `deprecated/`、`misc/` 与 `node_modules/`），在确认目标目录本身不是指向仓库内部的软链接后，为每个技能创建软链接。修改 `SKILL.md` 或执行 `git pull` 会立即生效；新增、重命名、移动或下线技能后重新运行 `./scripts/link-skills.sh` 即可同步。
+[`scripts/link-skills.sh`](./scripts/link-skills.sh) 会同时完成两部分配置：
+
+1. **技能软链接热更新**：扫描 `skills/` 下的 `SKILL.md`（自动跳过 `deprecated/`、`misc/` 与 `node_modules/`），确认目标目录未指向仓库内部后，软链接到 `~/.gemini/config/skills`、`~/.claude/skills` 与 `~/.agents/skills`。
+2. **全局文档与发版治理**：
+   - 将 [`governance/`](./governance/plugin.json) 软链接至 `~/.gemini/config/plugins/lstack-docs-governance`（为 Antigravity 启用全局规则 [`governance/rules/AGENTS.md`](./governance/rules/AGENTS.md) 与确定性 `Stop` 钩子 [`governance/hooks/stop-docs-check.py`](./governance/hooks/stop-docs-check.py)）。
+   - 将 `governance/rules/AGENTS.md` 软链接至 `~/.claude/rules/docs-discipline.md`（供 Claude Code 读取）。
+   - 若本机存在 `~/.codex` 或 `~/.kl` 目录，自动向 `~/.codex/AGENTS.md` 与 `~/.kl/agent/AGENTS.md` 写入/更新托管规则块。
+
+修改 `SKILL.md` 或规则文件后立即生效；新增、重命名、移动或下线技能后重新运行 `./scripts/link-skills.sh` 即可同步。
+
+对于在独立 `HOME` 沙箱中运行的后台 Worker（如 Nexus 的 Git Worktree 执行环境），可用以下脚本将同一规则块注入目标仓库根目录的 `AGENTS.md`：
+
+```bash
+./scripts/inject-repo-rule.sh /path/to/repo
+```
 
 ### 各运行环境安装
 
@@ -85,7 +99,9 @@ gemini skills install https://github.com/xdlkc/lstack.git --path skills/producti
 
 | 技能 | 触发方式 | 说明 |
 | --- | --- | --- |
-| **[code-review](./skills/engineering/code-review/SKILL.md)** | `Model-invoked` | 双轴代码审查：独立检查代码规范（`AGENTS.md`、`CLAUDE.md`、结构清晰度）与需求/规格一致性，按严重级别输出问题。 |
+| **[cut-release](./skills/engineering/cut-release/SKILL.md)** | `User-invoked` | 核对版本清单、推进 [`CHANGELOG.md`](./CHANGELOG.md) 封版并生成双语 GitHub Release Notes（`/cut-release`）。 |
+| **[code-review](./skills/engineering/code-review/SKILL.md)** | `Model-invoked` | 双轴代码审查：独立检查代码规范（`AGENTS.md`、`CLAUDE.md`、结构清晰度）、文档/Changelog 同步性以及需求一致性，按严重级别输出问题。 |
+| **[docs-sync](./skills/engineering/docs-sync/SKILL.md)** | `Model-invoked` | 在变更 CLI、端口、配置或架构时同步维护双语 `README.md` / `README.zh-CN.md` 与 `CHANGELOG.md`，并附带 [`verify_docs.py`](./skills/engineering/docs-sync/scripts/verify_docs.py) 校验脚本。 |
 | **[tdd](./skills/engineering/tdd/SKILL.md)** | `Model-invoked` | 红-绿-重构测试驱动开发循环，围绕公开边界逐个垂直切片推进实现。 |
 
 ### 效率类（Productivity）
@@ -109,14 +125,23 @@ gemini skills install https://github.com/xdlkc/lstack.git --path skills/producti
 .
 ├── .claude-plugin/
 │   ├── marketplace.json        # 插件市场清单（xdlkc）
-│   └── plugin.json             # 插件定义与正式技能列表
+│   └── plugin.json             # 插件定义与正式技能列表（v0.2.0）
+├── governance/                 # 全局规则与 Antigravity Stop 钩子插件包
+│   ├── plugin.json             # Antigravity 原生插件清单
+│   ├── hooks.json              # Stop 生命周期钩子配置
+│   ├── hooks/
+│   │   └── stop-docs-check.py  # 确定性双语漂移与断链拦截脚本
+│   └── rules/
+│       └── AGENTS.md           # 精简常驻文档与发版触发规则
 ├── scripts/
-│   └── link-skills.sh          # 本地软链接安装脚本（Antigravity / Claude Code / Codex）
+│   ├── link-skills.sh          # 本地技能软链接与全局治理规则安装脚本
+│   └── inject-repo-rule.sh     # 向指定仓库 AGENTS.md 注入托管规则块
 ├── skills/
-│   ├── engineering/            # 正式工程技能（code-review, tdd）
+│   ├── engineering/            # 正式工程技能（cut-release, code-review, docs-sync, tdd）
 │   ├── productivity/           # 正式效率技能（grill-me, grilling）
 │   └── in-progress/            # 实验性技能（不纳入插件清单）
 ├── AGENTS.md                   # 仓库协作规范
+├── CHANGELOG.md                # 版本变更记录（Keep a Changelog）
 ├── CLAUDE.md                   # 规范基准文档
 ├── README.md
 └── README.zh-CN.md

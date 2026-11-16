@@ -1,0 +1,3 @@
+interface:
+  display_name: "Docs Sync"
+  short_description: "Keep bilingual READMEs and CHANGELOG aligned with code"

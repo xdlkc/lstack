@@ -35,16 +35,27 @@ Every `SKILL.md` falls into one of two invocation categories, and `agents/openai
 
 A user-invoked skill may invoke model-invoked skills (e.g. `Call the Skill tool with "grilling"`), but no skill should invoke a user-invoked skill.
 
-## Local Symlink Sync
+## Local Symlink & Governance Sync
 
-After adding, renaming, moving, or removing a skill, run:
+After adding, renaming, moving, or removing a skill or updating `governance/`, run:
 
 ```bash
 ./scripts/link-skills.sh
 ```
 
-This updates symlinks in `~/.gemini/config/skills`, `~/.claude/skills`, and `~/.agents/skills` for every skill outside `deprecated/` and `misc/`.
+This updates:
+
+- Skill symlinks in `~/.gemini/config/skills`, `~/.claude/skills`, and `~/.agents/skills` for every skill outside `deprecated/` and `misc/`.
+- Antigravity governance plugin symlink at `~/.gemini/config/plugins/lstack-docs-governance` (linking `./governance/`, including global `rules/AGENTS.md` and the `Stop` hook in `hooks.json`).
+- Claude Code global rule symlink at `~/.claude/rules/docs-discipline.md`.
+- Managed `<!-- BEGIN LSTACK DOCS GOVERNANCE -->` rule blocks in `~/.codex/AGENTS.md` and `~/.kl/agent/AGENTS.md` (when installed).
+
+For isolated headless workers (such as Nexus worktrees running with isolated `HOME`), inject the governance rule block into a target repository's `AGENTS.md` using:
+
+```bash
+./scripts/inject-repo-rule.sh /path/to/repo
+```
 
 ## Validation
 
-After editing `.claude-plugin/plugin.json` or `.claude-plugin/marketplace.json`, verify valid JSON and check manifests (e.g. `claude plugin validate .` if Claude CLI is installed).
+After editing `.claude-plugin/plugin.json` or `.claude-plugin/marketplace.json`, verify valid JSON and check manifests (e.g. `claude plugin validate .` if Claude CLI is installed). After editing `README.md`, `README.zh-CN.md`, or `CHANGELOG.md`, run `python3 ./skills/engineering/docs-sync/scripts/verify_docs.py . --strict-bilingual`.

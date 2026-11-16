@@ -1,6 +1,6 @@
 {
   "name": "lstack",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Personal agent skills stack for engineering and productivity.",
   "author": {
     "name": "xdlkc",
@@ -14,11 +14,15 @@
     "productivity",
     "tdd",
     "code-review",
-    "grilling"
+    "grilling",
+    "docs-sync",
+    "release"
   ],
   "skills": [
     "./skills/engineering/tdd",
     "./skills/engineering/code-review",
+    "./skills/engineering/docs-sync",
+    "./skills/engineering/cut-release",
     "./skills/productivity/grill-me",
     "./skills/productivity/grilling"
   ]

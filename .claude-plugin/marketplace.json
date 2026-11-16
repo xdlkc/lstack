@@ -16,7 +16,9 @@
         "skills",
         "productivity",
         "tdd",
-        "code-review"
+        "code-review",
+        "docs-sync",
+        "release"
       ]
     }
   ]

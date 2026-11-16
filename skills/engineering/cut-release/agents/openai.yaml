@@ -1,0 +1,5 @@
+interface:
+  display_name: "Cut Release"
+  short_description: "Align versions, roll CHANGELOG, and draft bilingual Release Notes"
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,12 @@
+{
+  "name": "lstack-docs-governance",
+  "displayName": "Lstack Docs & Release Governance",
+  "version": "0.1.0",
+  "description": "Always-on bilingual README, CHANGELOG, and Release Notes discipline with deterministic Stop hook verification.",
+  "author": {
+    "name": "xdlkc",
+    "url": "https://github.com/xdlkc"
+  },
+  "repository": "https://github.com/xdlkc/lstack",
+  "license": "MIT"
+}
