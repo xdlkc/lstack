@@ -1,0 +1,25 @@
+{
+  "name": "lstack",
+  "version": "0.1.0",
+  "description": "Personal agent skills stack for engineering and productivity.",
+  "author": {
+    "name": "xdlkc",
+    "url": "https://github.com/xdlkc"
+  },
+  "repository": "https://github.com/xdlkc/lstack",
+  "license": "MIT",
+  "keywords": [
+    "engineering",
+    "skills",
+    "productivity",
+    "tdd",
+    "code-review",
+    "grilling"
+  ],
+  "skills": [
+    "./skills/engineering/tdd",
+    "./skills/engineering/code-review",
+    "./skills/productivity/grill-me",
+    "./skills/productivity/grilling"
+  ]
+}

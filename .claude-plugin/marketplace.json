@@ -1,0 +1,23 @@
+{
+  "name": "xdlkc",
+  "owner": {
+    "name": "xdlkc",
+    "url": "https://github.com/xdlkc"
+  },
+  "description": "lstack: personal agent skills for engineering and productivity.",
+  "plugins": [
+    {
+      "name": "lstack",
+      "source": "./",
+      "description": "Personal agent skills for engineering and productivity.",
+      "category": "engineering",
+      "keywords": [
+        "engineering",
+        "skills",
+        "productivity",
+        "tdd",
+        "code-review"
+      ]
+    }
+  ]
+}
